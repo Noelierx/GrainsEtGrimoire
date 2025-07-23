@@ -31,28 +31,32 @@ function App() {
         <h1>☕ Le Café-Librairie ☕</h1>
         <p>Servez vos clients et recommandez-leur les meilleurs livres !</p>
       </header>
-      <main role="main">
-        <Stats
-          argent={argent}
-          satisfaction={satisfaction}
-          reputation={reputation}
-          jour={jour}
-        />
-        <ClientSection
-          clientActuel={clientActuel}
-          inventaire={inventaire}
-          servir={servir}
-          recommanderLivre={recommanderLivre}
-          terminerService={terminerService}
-          nouveauClient={nouveauClient}
-          passerJour={passerJour}
-        />
-        <InventaireSection
-          inventaire={inventaire}
-          acheterProduit={acheterProduit}
-          acheterLivres={acheterLivres}
-        />
-        <Journal logMessages={logMessages} logRef={logRef} />
+      <main className="main-layout" role="main">
+        <div className="left-panel">
+          <Stats
+            argent={argent}
+            satisfaction={satisfaction}
+            reputation={reputation}
+            jour={jour}
+          />
+          <Journal logMessages={logMessages} logRef={logRef} />
+        </div>
+        <div className="right-panel">
+          <ClientSection
+            clientActuel={clientActuel}
+            inventaire={inventaire}
+            servir={servir}
+            recommanderLivre={recommanderLivre}
+            terminerService={terminerService}
+            nouveauClient={nouveauClient}
+            passerJour={passerJour}
+          />
+          <InventaireSection
+            inventaire={inventaire}
+            acheterProduit={acheterProduit}
+            acheterLivres={acheterLivres}
+          />
+        </div>
       </main>
     </div>
   );

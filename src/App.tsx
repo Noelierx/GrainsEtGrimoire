@@ -4,6 +4,7 @@ import Stats from "./components/Stats";
 import ClientSection from "./components/ClientSection";
 import InventaireSection from "./components/InventaireSection";
 import Journal from "./components/Journal";
+import QuetesSection from "./components/QuetesSection";
 import useGame from "./hooks/useGame";
 
 function App() {
@@ -22,7 +23,9 @@ function App() {
     terminerService,
     passerJour,
     acheterLivres,
-    acheterProduit
+    acheterProduit,
+    quetes,
+    objetsDebloques,
   } = useGame();
 
   return (
@@ -39,6 +42,7 @@ function App() {
             reputation={reputation}
             jour={jour}
           />
+          <QuetesSection quetes={quetes} />
           <Journal logMessages={logMessages} logRef={logRef} />
         </div>
         <div className="right-panel">
@@ -50,11 +54,13 @@ function App() {
             terminerService={terminerService}
             nouveauClient={nouveauClient}
             passerJour={passerJour}
+            objetsDebloques={objetsDebloques}
           />
           <InventaireSection
             inventaire={inventaire}
             acheterProduit={acheterProduit}
             acheterLivres={acheterLivres}
+            objetsDebloques={objetsDebloques}
           />
         </div>
       </main>

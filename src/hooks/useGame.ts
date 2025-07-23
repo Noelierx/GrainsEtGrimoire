@@ -6,8 +6,27 @@ import {
   handleEndService,
   handleClientLeave,
   handleClientAction,
-  handlePurchase
+  handlePurchase,
+  genererNouvellesQuetes,
+  verifierQuetes,
+  toutesQuetesCompletees,
+  donnerRecompense
 } from "../utils/gameLogic";
+
+const inventaireInitial: Inventaire = {
+  cafe: 10,
+  the: 8,
+  chocolat: 5,
+  croissant: 6,
+  muffin: 4,
+  livres: {
+    "Roman": 3,
+    "Science-Fiction": 2,
+    "Polar": 4,
+    "Philosophie": 1,
+    "Cuisine": 2
+  }
+};
 
 export default function useGame() {
   const [argent, setArgent] = useState(50);
@@ -15,23 +34,24 @@ export default function useGame() {
   const [reputation, setReputation] = useState(1);
   const [jour, setJour] = useState(1);
   const [clientActuel, setClientActuel] = useState<ClientActuel | null>(null);
-  const [inventaire, setInventaire] = useState<Inventaire>({
-    cafe: 10,
-    the: 8,
-    chocolat: 5,
-    croissant: 6,
-    muffin: 4,
-    livres: {
-      "Roman": 3,
-      "Science-Fiction": 2,
-      "Polar": 4,
-      "Philosophie": 1,
-      "Cuisine": 2
-    }
-  });
+  const [inventaire, setInventaire] = useState<Inventaire>(inventaireInitial);
   const [logMessages, setLogMessages] = useState<string[]>([
     "Bienvenue dans votre café-librairie ! Servez vos premiers clients..."
   ]);
+  const [objetsDebloques, setObjetsDebloques] = useState({
+    boissons: Object.keys(inventaireInitial).filter(k => k !== "livres"),
+    nourritures: Object.keys(inventaireInitial).filter(k => k !== "livres"),
+    genresLivres: Object.keys(inventaireInitial.livres)
+  });
+  const [quetes, setQuetes] = useState<any[]>(() =>
+    genererNouvellesQuetes({
+      boissons: Object.keys(inventaireInitial).filter(k => k !== "livres"),
+      nourritures: Object.keys(inventaireInitial).filter(k => k !== "livres"),
+      genresLivres: Object.keys(inventaireInitial.livres)
+    })
+  );
+  const [quetesTerminees] = useState<any[]>([]);
+  const [notificationQuete] = useState<string | null>(null);
 
   const logRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -47,7 +67,7 @@ export default function useGame() {
       log("⚠️ Vous avez déjà un client ! Servez-le d'abord.");
       return;
     }
-    const nouveau = getRandomClient(typesClients);
+    const nouveau = getRandomClient(typesClients, objetsDebloques);
     setClientActuel(nouveau);
     log(`👋 ${nouveau.nom} entre dans le café.`);
   };
@@ -64,6 +84,8 @@ export default function useGame() {
       setClientActuel,
       clientParti
     });
+    // Met à jour la progression des quêtes
+    setQuetes(qs => verifierQuetes(qs, { type, cible: item }, log));
   };
 
   const recommanderLivre = (genre: string) => {
@@ -78,6 +100,8 @@ export default function useGame() {
       setClientActuel,
       clientParti
     });
+    // Met à jour la progression des quêtes
+    setQuetes(qs => verifierQuetes(qs, { type: "livre", cible: genre }, log));
   };
 
   const terminerService = () => {
@@ -100,7 +124,12 @@ export default function useGame() {
   }
 
   const passerJour = () => {
+    if (toutesQuetesCompletees(quetes)) {
+      donnerRecompense(objetsDebloques, setObjetsDebloques, setInventaire, setArgent, log);
+      log("🎁 Toutes les quêtes sont terminées ! Une récompense vous est attribuée.");
+    }
     setJour(j => j + 1);
+    setQuetes(genererNouvellesQuetes(objetsDebloques));
     log(`🌅 Jour ${jour + 1} commence ! La difficulté augmente...`);
   };
 
@@ -142,6 +171,10 @@ export default function useGame() {
     terminerService,
     passerJour,
     acheterLivres,
-    acheterProduit
+    acheterProduit,
+    quetes,
+    objetsDebloques,
+    quetesTerminees,
+    notificationQuete
   };
 }

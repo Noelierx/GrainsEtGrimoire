@@ -9,6 +9,11 @@ interface ClientSectionProps {
   terminerService: () => void;
   nouveauClient: () => void;
   passerJour: () => void;
+  objetsDebloques: {
+    boissons: string[];
+    nourritures: string[];
+    genresLivres: string[];
+  };
 }
 
 const ClientSection: React.FC<ClientSectionProps> = ({
@@ -18,7 +23,8 @@ const ClientSection: React.FC<ClientSectionProps> = ({
   recommanderLivre,
   terminerService,
   nouveauClient,
-  passerJour
+  passerJour,
+  objetsDebloques
 }) => {
   const firstActionRef = useRef<HTMLButtonElement>(null);
 
@@ -27,6 +33,7 @@ const ClientSection: React.FC<ClientSectionProps> = ({
       firstActionRef.current.focus();
     }
   }, [clientActuel]);
+
   return (
     <section className="game-area" aria-labelledby="titre-client-actuel">
       <h2 id="titre-client-actuel">Client actuel :</h2>
@@ -52,66 +59,78 @@ const ClientSection: React.FC<ClientSectionProps> = ({
               role="group"
               aria-label="Actions de service"
             >
-              {!clientActuel.servi.boisson && clientActuel.boissons.map((boisson: string, idx: number) => (
-                <button
-                  key={boisson}
-                  ref={idx === 0 ? firstActionRef : undefined}
-                  onClick={() => servir(boisson, "boisson")}
-                  disabled={(inventaire as any)[boisson] <= 0}
-                  aria-label={`Servir ${boisson}${boisson === clientActuel.boissonDemandee ? " (préféré)" : ""}${(inventaire as any)[boisson] <= 0 ? " (rupture)" : ""}`}
-                >
-                  {boisson === clientActuel.boissonDemandee ? "✨" : ""}
-                  {boisson}
-                  {(inventaire as any)[boisson] <= 0 ? " (rupture)" : ""}
-                </button>
-              ))}
-              {!clientActuel.servi.nourriture && clientActuel.nourritures.map((nourriture: string, idx: number) => {
-                const shouldFocus =
-                  clientActuel.servi.boisson &&
-                  idx === 0 &&
-                  !clientActuel.servi.nourriture;
-                return (
+              {!clientActuel.servi.boisson && clientActuel.boissons
+                .filter(boisson => objetsDebloques.boissons.includes(boisson))
+                .map((boisson: string, idx: number) => (
                   <button
-                    key={nourriture}
-                    ref={shouldFocus ? firstActionRef : undefined}
-                    onClick={() => servir(nourriture, "nourriture")}
-                    disabled={(inventaire as any)[nourriture] <= 0}
-                    aria-label={`Servir ${nourriture}${nourriture === clientActuel.nourritureDemandee ? " (préféré)" : ""}${(inventaire as any)[nourriture] <= 0 ? " (rupture)" : ""}`}
+                    key={boisson}
+                    ref={idx === 0 ? firstActionRef : undefined}
+                    onClick={() => servir(boisson, "boisson")}
+                    disabled={(inventaire as any)[boisson] <= 0}
+                    aria-label={`Servir ${boisson}${boisson === clientActuel.boissonDemandee ? " (préféré)" : ""}${(inventaire as any)[boisson] <= 0 ? " (rupture)" : ""}`}
                   >
-                    {nourriture === clientActuel.nourritureDemandee ? "✨" : ""}
-                    {nourriture}
-                    {(inventaire as any)[nourriture] <= 0 ? " (rupture)" : ""}
+                    {boisson === clientActuel.boissonDemandee ? "✨" : ""}
+                    {boisson}
+                    {(inventaire as any)[boisson] <= 0 ? " (rupture)" : ""}
                   </button>
-                );
-              })}
-              {!clientActuel.servi.livre && clientActuel.genresLivres.map((genre: string, idx: number) => {
-                const shouldFocus =
-                  clientActuel.servi.boisson &&
-                  (clientActuel.nourritures.length === 0 || clientActuel.servi.nourriture) &&
-                  idx === 0 &&
-                  !clientActuel.servi.livre;
-                return (
-                  <button
-                    key={genre}
-                    ref={shouldFocus ? firstActionRef : undefined}
-                    onClick={() => recommanderLivre(genre)}
-                    disabled={inventaire.livres[genre] <= 0}
-                    aria-label={`Recommander livre ${genre}${genre === clientActuel.genreDemande ? " (préféré)" : ""}${inventaire.livres[genre] <= 0 ? " (rupture)" : ""}`}
-                  >
-                    {genre === clientActuel.genreDemande ? "✨" : ""}
-                    {genre}
-                    {inventaire.livres[genre] <= 0 ? " (rupture)" : ""}
-                  </button>
-                );
-              })}
-              <button onClick={terminerService} aria-label="Terminer le service">Terminer le service</button>
+                ))
+              }
+              {!clientActuel.servi.nourriture && clientActuel.nourritures
+                .filter(nourriture => objetsDebloques.nourritures.includes(nourriture))
+                .map((nourriture: string, idx: number) => {
+                  const shouldFocus =
+                    clientActuel.servi.boisson &&
+                    idx === 0 &&
+                    !clientActuel.servi.nourriture;
+                  return (
+                    <button
+                      key={nourriture}
+                      ref={shouldFocus ? firstActionRef : undefined}
+                      onClick={() => servir(nourriture, "nourriture")}
+                      disabled={(inventaire as any)[nourriture] <= 0}
+                      aria-label={`Servir ${nourriture}${nourriture === clientActuel.nourritureDemandee ? " (préféré)" : ""}${(inventaire as any)[nourriture] <= 0 ? " (rupture)" : ""}`}
+                    >
+                      {nourriture === clientActuel.nourritureDemandee ? "✨" : ""}
+                      {nourriture}
+                      {(inventaire as any)[nourriture] <= 0 ? " (rupture)" : ""}
+                    </button>
+                  );
+                })
+              }
+              {!clientActuel.servi.livre && clientActuel.genresLivres
+                .filter(genre => objetsDebloques.genresLivres.includes(genre))
+                .map((genre: string, idx: number) => {
+                  const shouldFocus =
+                    clientActuel.servi.boisson &&
+                    (clientActuel.nourritures.filter(n => objetsDebloques.nourritures.includes(n)).length === 0 || clientActuel.servi.nourriture) &&
+                    idx === 0 &&
+                    !clientActuel.servi.livre;
+                  return (
+                    <button
+                      key={genre}
+                      ref={shouldFocus ? firstActionRef : undefined}
+                      onClick={() => recommanderLivre(genre)}
+                      disabled={inventaire.livres[genre] <= 0}
+                      aria-label={`Recommander livre ${genre}${genre === clientActuel.genreDemande ? " (préféré)" : ""}${inventaire.livres[genre] <= 0 ? " (rupture)" : ""}`}
+                    >
+                      {genre === clientActuel.genreDemande ? "✨" : ""}
+                      {genre}
+                      {inventaire.livres[genre] <= 0 ? " (rupture)" : ""}
+                    </button>
+                  );
+                })
+              }
+              <div className="terminer-service-separator"></div>
+              <button onClick={terminerService}>
+                Terminer le service
+              </button>
             </div>
           </>
         )}
       </div>
-      <nav className="actions" aria-label="Actions principales">
-        <button onClick={nouveauClient} aria-label="Nouveau client">Nouveau Client</button>
-        <button onClick={passerJour} aria-label="Passer au jour suivant">Passer au Jour Suivant</button>
+      <nav className="actions">
+        <button onClick={nouveauClient}>Nouveau Client</button>
+        <button onClick={passerJour}>Passer au Jour Suivant</button>
       </nav>
     </section>
   );

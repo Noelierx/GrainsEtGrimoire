@@ -5,7 +5,7 @@ export const typesClients: ClientType[] = [
     nom: "Marie, étudiante",
     boissons: ["cafe", "the"],
     nourritures: ["croissant", "muffin"],
-    genresLivres: ["Philosophie", "Roman"],
+    genresLivres: ["Philosophie", "Roman", "Poesie"],
     patience: 3,
     budget: 15,
     description: "Une étudiante en philo qui cherche de quoi réfléchir"
@@ -66,11 +66,30 @@ export const typesClients: ClientType[] = [
   }
 ];
 
-export const prix = {
+export const prixAchat = {
   cafe: 3,
   the: 2,
   chocolat: 4,
   croissant: 2,
   muffin: 3,
-  livres: 12
+  livres: 12,
+  matcha: 4,
+  latteMarron: 5,
+  cookie: 2,
 };
+
+export const prixVente = {
+  cafe: 3,
+  the: 2,
+  chocolat: 4,
+  croissant: 2,
+  muffin: 3,
+  livres: 18,
+  matcha: 4,
+  latteMarron: 5,
+  cookie: 2,
+};
+
+export const allBoissons = ["cafe", "the", "chocolat", "Matcha", "latteMarron"];
+export const allNourritures = ["croissant", "muffin", "cookie"];
+export const allGenresLivres = ["Roman", "Science-Fiction", "Polar", "Philosophie", "Cuisine", "Poesie"];

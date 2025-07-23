@@ -204,7 +204,6 @@ button:focus, [tabindex]:focus {
   gap: 20px;
 }
 
-/* Responsive : repasse en colonne sur mobile */
 @media (max-width: 900px) {
   .main-layout {
     flex-direction: column;
@@ -212,4 +211,10 @@ button:focus, [tabindex]:focus {
   .left-panel, .right-panel {
     min-width: 0;
   }
+}
+
+.terminer-service-separator {
+  margin: 12px 0 4px 0;
+  border-top: 1.5px solid #bfa77a;
+  width: 100%;
 }

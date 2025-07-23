@@ -1,13 +1,7 @@
 import React from "react";
+import { StatsProps } from "../types";
 
 const niveauxReputation = ['Débutant', 'Apprenti', 'Expérimenté', 'Expert', 'Maître'];
-
-interface StatsProps {
-  argent: number;
-  satisfaction: number;
-  reputation: number;
-  jour: number;
-}
 
 const Stats = ({ argent, satisfaction, reputation, jour }: StatsProps) => (
   <section className="stats" aria-label="Statistiques du jeu">

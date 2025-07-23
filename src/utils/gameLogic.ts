@@ -1,7 +1,7 @@
-import { ClientActuel, Inventaire } from "../types";
+import { ClientType, ClientActuel, Inventaire, HandleEndServiceProps, HandleClientLeaveProps, HandleClientActionProps, HandlePurchaseProps } from "../types";
 import { prix } from "../constants";
 
-export function getRandomClient(typesClients: any[]): ClientActuel {
+export function getRandomClient(typesClients: ClientType[]): ClientActuel {
   const clientType = typesClients[Math.floor(Math.random() * typesClients.length)];
   const boissonChoisie = clientType.boissons[Math.floor(Math.random() * clientType.boissons.length)];
   const nourritureChoisie = clientType.nourritures.length > 0 ?
@@ -17,90 +17,13 @@ export function getRandomClient(typesClients: any[]): ClientActuel {
   };
 }
 
-export function handleServe({
-  item,
-  type,
-  clientActuel,
-  inventaire,
-  setInventaire,
-  setArgent,
-  log,
-  setClientActuel,
-  clientParti
-}: any) {
-  if (!clientActuel) return;
-  if ((inventaire as Record<string, number | typeof inventaire.livres>)[item] as number <= 0) {
-    log(`❌ Plus de ${item} en stock !`);
-    const newClient = { ...clientActuel, patienceRestante: clientActuel.patienceRestante - 1 };
-    if (newClient.patienceRestante <= 0) {
-      clientParti();
-      return;
-    }
-    setClientActuel(newClient);
-    return;
-  }
-  setInventaire((inv: Inventaire) => ({
-    ...inv,
-    [item]: (inv as Record<string, number | typeof inv.livres>)[item] as number - 1
-  }));
-  const prixItem = Number((prix as any)[item]) || 0;
-  setArgent((a: number) => Number((a + prixItem).toFixed(2)));
-  const estPrefere = (type === 'boisson' && item === clientActuel.boissonDemandee) ||
-    (type === 'nourriture' && item === clientActuel.nourritureDemandee);
-  log(estPrefere ?
-    `✅ ${item} servi à ${clientActuel.nom} - Parfait ! (+${prixItem}€)` :
-    `✅ ${item} servi à ${clientActuel.nom} - Ça ira (+${prixItem}€)`
-  );
-  setClientActuel({
-    ...clientActuel,
-    servi: { ...clientActuel.servi, [type]: true }
-  });
-}
-
-export function handleRecommendBook({
-  genre,
-  clientActuel,
-  inventaire,
-  setInventaire,
-  setArgent,
-  log,
-  setClientActuel,
-  clientParti
-}: any) {
-  if (!clientActuel) return;
-  if (inventaire.livres[genre] <= 0) {
-    log(`❌ Plus de livres de ${genre} en stock !`);
-    const newClient = { ...clientActuel, patienceRestante: clientActuel.patienceRestante - 1 };
-    if (newClient.patienceRestante <= 0) {
-      clientParti();
-      return;
-    }
-    setClientActuel(newClient);
-    return;
-  }
-  setInventaire((inv: Inventaire) => ({
-    ...inv,
-    livres: { ...inv.livres, [genre]: inv.livres[genre] - 1 }
-  }));
-  setArgent((a: number) => Number((a + prix.livres).toFixed(2)));
-  const estPrefere = genre === clientActuel.genreDemande;
-  log(estPrefere ?
-    `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Excellent choix ! (+${prix.livres}€)` :
-    `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Intéressant (+${prix.livres}€)`
-  );
-  setClientActuel({
-    ...clientActuel,
-    servi: { ...clientActuel.servi, livre: true }
-  });
-}
-
 export function handleEndService({
   clientActuel,
   setSatisfaction,
   setReputation,
   log,
   setClientActuel
-}: any) {
+}: HandleEndServiceProps) {
   if (!clientActuel) return;
   let satisfactionScore = 50;
   if (clientActuel.servi.boisson) satisfactionScore += 15;
@@ -129,7 +52,7 @@ export function handleClientLeave({
   setSatisfaction,
   log,
   setClientActuel
-}: any) {
+}: HandleClientLeaveProps) {
   if (!clientActuel) return;
   log(`😠 ${clientActuel.nom} repart mécontent par manque de patience...`);
   setSatisfaction((s: number) => Math.max(0, s - 15));
@@ -156,26 +79,6 @@ export function restockBooks(inv: Inventaire): Inventaire {
   };
 }
 
-export function purchaseProduct({
-  produit,
-  argent,
-  setArgent,
-  setInventaire,
-  log
-}: any) {
-  const prixProduit = Number((prix as Record<string, number>)[produit]) || 0;
-  if (argent < prixProduit) {
-    log(`❌ Pas assez d'argent pour acheter un(e) ${produit} !`);
-    return;
-  }
-  setArgent((a: number) => Number((a - prixProduit).toFixed(2)));
-  setInventaire((inv: Inventaire) => ({
-    ...inv,
-    [produit]: (inv as Record<string, number | typeof inv.livres>)[produit] as number + 1
-  }));
-  log(`🛒 ${produit.charAt(0).toUpperCase() + produit.slice(1)} acheté(e) !`);
-}
-
 export function handleClientAction({
   actionType,
   itemOrGenre,
@@ -186,7 +89,7 @@ export function handleClientAction({
   log,
   setClientActuel,
   clientParti
-}: any) {
+}: HandleClientActionProps) {
   if (!clientActuel) return;
   if (actionType === "livre") {
     const genre = itemOrGenre;
@@ -207,8 +110,8 @@ export function handleClientAction({
     setArgent((a: number) => Number((a + prix.livres).toFixed(2)));
     const estPrefere = genre === clientActuel.genreDemande;
     log(estPrefere ?
-      `📖 Livre de ${genre} servi à ${clientActuel.nom} - Parfait ! (+${prix.livres}€)` :
-      `📖 Livre de ${genre} servi à ${clientActuel.nom} - Ça ira (+${prix.livres}€)`
+      `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Parfait ! (+${prix.livres}€)` :
+      `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Ça ira (+${prix.livres}€)`
     );
     setClientActuel({
       ...clientActuel,
@@ -253,7 +156,7 @@ export function handlePurchase({
   inventaire,
   setInventaire,
   log
-}: any) {
+}: HandlePurchaseProps) {
   if (type === "livres") {
     const cost = 20;
     if (argent < cost) {
@@ -264,6 +167,10 @@ export function handlePurchase({
     setInventaire(restockBooks);
     log("📚 Nouveaux livres achetés ! Stock de livres réapprovisionné.");
   } else {
+    if (!produit) {
+      log("❌ Aucun produit sélectionné !");
+      return;
+    }
     const prixProduit = Number((prix as Record<string, number>)[produit]) || 0;
     if (argent < prixProduit) {
       log(`❌ Pas assez d'argent pour acheter un(e) ${produit} !`);

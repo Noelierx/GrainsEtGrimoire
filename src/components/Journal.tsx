@@ -2,7 +2,7 @@ import React from "react";
 
 interface JournalProps {
   logMessages: string[];
-  logRef: React.RefObject<HTMLDivElement | null>;
+  logRef: React.RefObject<HTMLDivElement>;
 }
 
 const Journal: React.FC<JournalProps> = ({ logMessages, logRef }) => (

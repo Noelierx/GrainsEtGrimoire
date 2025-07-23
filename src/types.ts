@@ -77,3 +77,12 @@ export interface HandlePurchaseProps {
   setInventaire: React.Dispatch<React.SetStateAction<Inventaire>>;
   log: (message: string) => void;
 }
+
+export interface Quete {
+  type: string;
+  cible: string;
+  description: string;
+  completee: boolean;
+  progression: number;
+  quantite: number;
+}

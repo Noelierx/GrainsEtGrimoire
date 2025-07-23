@@ -1,19 +1,74 @@
-import { ClientType, ClientActuel, Inventaire, HandleEndServiceProps, HandleClientLeaveProps, HandleClientActionProps, HandlePurchaseProps } from "../types";
-import { prix } from "../constants";
+import { ClientType, ClientActuel, Inventaire, HandleEndServiceProps, HandleClientLeaveProps, HandleClientActionProps, HandlePurchaseProps, Quete } from "../types";
+import { prixAchat, prixVente, allBoissons, allNourritures, allGenresLivres } from "../constants";
+import React from "react";
 
-export function getRandomClient(typesClients: ClientType[]): ClientActuel {
+// Génération dynamique des types de quêtes
+const queteQuantites = {
+  boisson: { min: 2, max: 5 },
+  nourriture: { min: 2, max: 4 },
+  livre: { min: 2, max: 5 }
+};
+
+export function getTypesQuetes() {
+  return [
+    ...allBoissons.map(b => ({
+      type: "boisson",
+      cible: b,
+      description: `Servir des ${b}`,
+      min: queteQuantites.boisson.min,
+      max: queteQuantites.boisson.max
+    })),
+    ...allNourritures.map(n => ({
+      type: "nourriture",
+      cible: n,
+      description: `Servir des ${n}`,
+      min: queteQuantites.nourriture.min,
+      max: queteQuantites.nourriture.max
+    })),
+    ...allGenresLivres.map(g => ({
+      type: "livre",
+      cible: g,
+      description: `Recommander des livres de ${g}`,
+      min: queteQuantites.livre.min,
+      max: queteQuantites.livre.max
+    }))
+  ];
+}
+
+export function getRandomClient(
+  typesClients: ClientType[],
+  objetsDebloques: { boissons: string[], nourritures: string[], genresLivres: string[] }
+): ClientActuel {
   const clientType = typesClients[Math.floor(Math.random() * typesClients.length)];
-  const boissonChoisie = clientType.boissons[Math.floor(Math.random() * clientType.boissons.length)];
-  const nourritureChoisie = clientType.nourritures.length > 0 ?
-    clientType.nourritures[Math.floor(Math.random() * clientType.nourritures.length)] : null;
-  const genreChoisie = clientType.genresLivres[Math.floor(Math.random() * clientType.genresLivres.length)];
+
+  const boissonsPossibles = clientType.boissons.filter(b => objetsDebloques.boissons.includes(b));
+  const nourrituresPossibles = clientType.nourritures.filter(n => objetsDebloques.nourritures.includes(n));
+  const genresLivresPossibles = clientType.genresLivres.filter(g => objetsDebloques.genresLivres.includes(g));
+
+  const boissonsList = boissonsPossibles.length > 0 ? boissonsPossibles : objetsDebloques.boissons;
+  const boissonChoisie = boissonsList[Math.floor(Math.random() * boissonsList.length)];
+
+  const nourrituresList = nourrituresPossibles.length > 0 ? nourrituresPossibles : objetsDebloques.nourritures;
+  const nourritureChoisie = nourrituresList.length > 0 
+    ? nourrituresList[Math.floor(Math.random() * nourrituresList.length)]
+    : null;
+
+  const genresList = genresLivresPossibles.length > 0 ? genresLivresPossibles : objetsDebloques.genresLivres;
+  const genreChoisie = genresList[Math.floor(Math.random() * genresList.length)];
+
   return {
-    ...clientType,
+    nom: clientType.nom,
+    description: clientType.description,
+    patience: clientType.patience,
+    budget: clientType.budget,
     boissonDemandee: boissonChoisie,
     nourritureDemandee: nourritureChoisie,
     genreDemande: genreChoisie,
     patienceRestante: clientType.patience,
-    servi: { boisson: false, nourriture: false, livre: false }
+    servi: { boisson: false, nourriture: false, livre: false },
+    boissons: clientType.boissons,
+    nourritures: clientType.nourritures,
+    genresLivres: clientType.genresLivres
   };
 }
 
@@ -59,17 +114,6 @@ export function handleClientLeave({
   setClientActuel(null);
 }
 
-export function restockInventory(inv: Inventaire, jour: number): Inventaire {
-  return {
-    ...inv,
-    cafe: inv.cafe + Math.max(1, 3 - Math.floor(jour / 10)),
-    the: inv.the + Math.max(1, 2 - Math.floor(jour / 15)),
-    chocolat: inv.chocolat + 1,
-    croissant: inv.croissant + Math.max(1, 2 - Math.floor(jour / 12)),
-    muffin: inv.muffin + 1
-  };
-}
-
 export function restockBooks(inv: Inventaire): Inventaire {
   return {
     ...inv,
@@ -107,11 +151,11 @@ export function handleClientAction({
       ...inv,
       livres: { ...inv.livres, [genre]: inv.livres[genre] - 1 }
     }));
-    setArgent((a: number) => Number((a + prix.livres).toFixed(2)));
+    setArgent((a: number) => Number((a + prixVente.livres).toFixed(2)));
     const estPrefere = genre === clientActuel.genreDemande;
     log(estPrefere ?
-      `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Parfait ! (+${prix.livres}€)` :
-      `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Ça ira (+${prix.livres}€)`
+      `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Parfait ! (+${prixVente.livres}€)` :
+      `📖 Livre de ${genre} recommandé à ${clientActuel.nom} - Ça ira (+${prixVente.livres}€)`
     );
     setClientActuel({
       ...clientActuel,
@@ -133,7 +177,7 @@ export function handleClientAction({
       ...inv,
       [item]: (inv as Record<string, number | typeof inv.livres>)[item] as number - 1
     }));
-    const prixItem = Number((prix as any)[item]) || 0;
+    const prixItem = Number((prixVente as any)[item]) || 0;
     setArgent((a: number) => Number((a + prixItem).toFixed(2)));
     const estPrefere = (actionType === 'boisson' && item === clientActuel.boissonDemandee) ||
       (actionType === 'nourriture' && item === clientActuel.nourritureDemandee);
@@ -153,12 +197,11 @@ export function handlePurchase({
   produit,
   argent,
   setArgent,
-  inventaire,
   setInventaire,
   log
 }: HandlePurchaseProps) {
   if (type === "livres") {
-    const cost = 20;
+    const cost = prixAchat.livres;
     if (argent < cost) {
       log("❌ Pas assez d'argent pour acheter des livres !");
       return;
@@ -171,7 +214,7 @@ export function handlePurchase({
       log("❌ Aucun produit sélectionné !");
       return;
     }
-    const prixProduit = Number((prix as Record<string, number>)[produit]) || 0;
+    const prixProduit = Number((prixAchat as Record<string, number>)[produit]) || 0;
     if (argent < prixProduit) {
       log(`❌ Pas assez d'argent pour acheter un(e) ${produit} !`);
       return;
@@ -183,4 +226,74 @@ export function handlePurchase({
     }));
     log(`🛒 ${produit.charAt(0).toUpperCase() + produit.slice(1)} acheté(e) !`);
   }
+}
+
+export function genererNouvellesQuetes(objetsDebloques: {boissons: string[], nourritures: string[], genresLivres: string[]}): Quete[] {
+  const typesQuetes = getTypesQuetes();
+  const pool = typesQuetes.filter(q =>
+    (q.type === "boisson" && objetsDebloques.boissons.includes(q.cible)) ||
+    (q.type === "nourriture" && objetsDebloques.nourritures.includes(q.cible)) ||
+    (q.type === "livre" && objetsDebloques.genresLivres.includes(q.cible))
+  );
+
+  const nb = Math.floor(Math.random() * 2) + 2;
+  const shuffled = pool.sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, nb).map(q => {
+    const quantite = Math.floor(Math.random() * (q.max - q.min + 1)) + q.min;
+    return { ...q, quantite, progression: 0, completee: false };
+  });
+}
+
+export function verifierQuetes(quetes: Quete[], action: {type: string, cible: string}, log: (msg: string) => void): Quete[] {
+  const nouvellesQuetes = quetes.map(q => {
+    if (!q.completee && q.type === action.type && q.cible === action.cible) {
+      const nouvelleProgression = q.progression + 1;
+      if (nouvelleProgression >= q.quantite) {
+        log(`🎉 Quête accomplie : ${q.description} (${q.quantite}/${q.quantite}) !`);
+        return { ...q, progression: q.quantite, completee: true };
+      } else {
+        log(`Progression de la quête : ${q.description} (${nouvelleProgression}/${q.quantite})`);
+        return { ...q, progression: nouvelleProgression };
+      }
+    }
+    return q;
+  });
+  return nouvellesQuetes;
+}
+
+export function toutesQuetesCompletees(quetes: Quete[]): boolean {
+  return quetes.every(q => q.completee);
+}
+
+export function donnerRecompense(
+  objetsDebloques: { boissons: string[], nourritures: string[], genresLivres: string[] },
+  setObjetsDebloques: React.Dispatch<React.SetStateAction<{ boissons: string[], nourritures: string[], genresLivres: string[] }>>,
+  setInventaire: React.Dispatch<React.SetStateAction<Inventaire>>,
+  setArgent: React.Dispatch<React.SetStateAction<number>>,
+  log: (msg: string) => void
+) {
+  const nonDebloques = [
+    ...allBoissons.filter(b => !objetsDebloques.boissons.includes(b)).map(b => ({ type: "boisson", nom: b })),
+    ...allNourritures.filter(n => !objetsDebloques.nourritures.includes(n)).map(n => ({ type: "nourriture", nom: n })),
+    ...allGenresLivres.filter(g => !objetsDebloques.genresLivres.includes(g)).map(g => ({ type: "livre", nom: g })),
+  ];
+  if (nonDebloques.length === 0) {
+    setArgent((a: number) => a + 20);
+    log("💰 Tous les objets sont débloqués ! Vous recevez 20€ à la place.");
+    return;
+  }
+  const obj = nonDebloques[Math.floor(Math.random() * nonDebloques.length)];
+  setObjetsDebloques((o: any) => {
+    if (obj.type === "boisson") return { ...o, boissons: [...o.boissons, obj.nom] };
+    if (obj.type === "nourriture") return { ...o, nourritures: [...o.nourritures, obj.nom] };
+    if (obj.type === "livre") return { ...o, genresLivres: [...o.genresLivres, obj.nom] };
+    return o;
+  });
+  setInventaire((inv: any) => {
+    if (obj.type === "boisson") return { ...inv, [obj.nom]: ((inv as any)[obj.nom] || 0) + 1 };
+    if (obj.type === "nourriture") return { ...inv, [obj.nom]: ((inv as any)[obj.nom] || 0) + 1 };
+    if (obj.type === "livre") return { ...inv, livres: { ...inv.livres, [obj.nom]: (inv.livres[obj.nom] || 0) + 1 } };
+    return inv;
+  });
+  log(`🔓 Nouveau produit débloqué : ${obj.nom} !`);
 }

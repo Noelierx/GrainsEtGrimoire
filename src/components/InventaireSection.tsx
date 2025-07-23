@@ -1,7 +1,10 @@
 import React from "react";
 
+import React from "react";
+import { Inventaire } from "../types";
+
 interface InventaireProps {
-  inventaire: any;
+  inventaire: Inventaire;
   acheterProduit: (produit: string) => void;
   acheterLivres: () => void;
 }

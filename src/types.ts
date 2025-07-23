@@ -3,8 +3,9 @@ export type Boisson = "cafe" | "the" | "chocolat";
 export type Nourriture = "croissant" | "muffin";
 
 export interface InventaireLivres {
-  [key: string]: number;
+  [genre: string]: number;
 }
+
 export interface Inventaire {
   cafe: number;
   the: number;
@@ -12,7 +13,9 @@ export interface Inventaire {
   croissant: number;
   muffin: number;
   livres: InventaireLivres;
+  [key: string]: number | InventaireLivres;
 }
+
 export interface ClientType {
   nom: string;
   boissons: string[];

@@ -31,7 +31,7 @@ function App() {
         <h1>☕ Le Café-Librairie ☕</h1>
         <p>Servez vos clients et recommandez-leur les meilleurs livres !</p>
       </header>
-      <div className="main-layout">
+      <main className="main-layout" role="main">
         <div className="left-panel">
           <Stats
             argent={argent}
@@ -57,7 +57,7 @@ function App() {
             acheterLivres={acheterLivres}
           />
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -29,7 +29,7 @@ export function handleServe({
   clientParti
 }: any) {
   if (!clientActuel) return;
-  if ((inventaire as any)[item] <= 0) {
+  if ((inventaire as Record<string, number | typeof inventaire.livres>)[item] as number <= 0) {
     log(`❌ Plus de ${item} en stock !`);
     const newClient = { ...clientActuel, patienceRestante: clientActuel.patienceRestante - 1 };
     if (newClient.patienceRestante <= 0) {
@@ -41,7 +41,7 @@ export function handleServe({
   }
   setInventaire((inv: Inventaire) => ({
     ...inv,
-    [item]: (inv as any)[item] - 1
+    [item]: (inv as Record<string, number | typeof inv.livres>)[item] as number - 1
   }));
   const prixItem = Number((prix as any)[item]) || 0;
   setArgent((a: number) => Number((a + prixItem).toFixed(2)));
@@ -163,7 +163,7 @@ export function purchaseProduct({
   setInventaire,
   log
 }: any) {
-  const prixProduit = Number((prix as any)[produit]) || 0;
+  const prixProduit = Number((prix as Record<string, number>)[produit]) || 0;
   if (argent < prixProduit) {
     log(`❌ Pas assez d'argent pour acheter un(e) ${produit} !`);
     return;
@@ -171,7 +171,7 @@ export function purchaseProduct({
   setArgent((a: number) => Number((a - prixProduit).toFixed(2)));
   setInventaire((inv: Inventaire) => ({
     ...inv,
-    [produit]: (inv as any)[produit] + 1
+    [produit]: (inv as Record<string, number | typeof inv.livres>)[produit] as number + 1
   }));
   log(`🛒 ${produit.charAt(0).toUpperCase() + produit.slice(1)} acheté(e) !`);
 }
@@ -216,7 +216,7 @@ export function handleClientAction({
     });
   } else {
     const item = itemOrGenre;
-    if ((inventaire as any)[item] <= 0) {
+    if ((inventaire as Record<string, number | typeof inventaire.livres>)[item] as number <= 0) {
       log(`❌ Plus de ${item} en stock !`);
       const newClient = { ...clientActuel, patienceRestante: clientActuel.patienceRestante - 1 };
       if (newClient.patienceRestante <= 0) {
@@ -228,25 +228,19 @@ export function handleClientAction({
     }
     setInventaire((inv: Inventaire) => ({
       ...inv,
-      [item]: (inv as any)[item] - 1
+      [item]: (inv as Record<string, number | typeof inv.livres>)[item] as number - 1
     }));
     const prixItem = Number((prix as any)[item]) || 0;
     setArgent((a: number) => Number((a + prixItem).toFixed(2)));
-    let type: string = '';
-    if (clientActuel.boissonDemandee === item) {
-      type = 'boisson';
-    } else if (clientActuel.nourritureDemandee === item) {
-      type = 'nourriture';
-    }
-    const estPrefere = (type === 'boisson' && item === clientActuel.boissonDemandee) ||
-      (type === 'nourriture' && item === clientActuel.nourritureDemandee);
+    const estPrefere = (actionType === 'boisson' && item === clientActuel.boissonDemandee) ||
+      (actionType === 'nourriture' && item === clientActuel.nourritureDemandee);
     log(estPrefere ?
       `✅ ${item} servi à ${clientActuel.nom} - Parfait ! (+${prixItem}€)` :
       `✅ ${item} servi à ${clientActuel.nom} - Ça ira (+${prixItem}€)`
     );
     setClientActuel({
       ...clientActuel,
-      servi: { ...clientActuel.servi, [type]: true }
+      servi: { ...clientActuel.servi, [actionType]: true }
     });
   }
 }
@@ -261,19 +255,16 @@ export function handlePurchase({
   log
 }: any) {
   if (type === "livres") {
-    const genre = produit;
-    if (inventaire.livres[genre] <= 0) {
-      log(`❌ Plus de livres de ${genre} en stock !`);
+    const cost = 20;
+    if (argent < cost) {
+      log("❌ Pas assez d'argent pour acheter des livres !");
       return;
     }
-    setInventaire((inv: Inventaire) => ({
-      ...inv,
-      livres: { ...inv.livres, [genre]: inv.livres[genre] - 1 }
-    }));
-    setArgent((a: number) => Number((a + prix.livres).toFixed(2)));
-    log(`📚 ${genre.charAt(0).toUpperCase() + genre.slice(1)} acheté(e) !`);
+    setArgent((a: number) => Number((a - cost).toFixed(2)));
+    setInventaire(restockBooks);
+    log("📚 Nouveaux livres achetés ! Stock de livres réapprovisionné.");
   } else {
-    const prixProduit = Number((prix as any)[produit]) || 0;
+    const prixProduit = Number((prix as Record<string, number>)[produit]) || 0;
     if (argent < prixProduit) {
       log(`❌ Pas assez d'argent pour acheter un(e) ${produit} !`);
       return;
@@ -281,7 +272,7 @@ export function handlePurchase({
     setArgent((a: number) => Number((a - prixProduit).toFixed(2)));
     setInventaire((inv: Inventaire) => ({
       ...inv,
-      [produit]: (inv as any)[produit] + 1
+      [produit]: (inv as Record<string, number | typeof inv.livres>)[produit] as number + 1
     }));
     log(`🛒 ${produit.charAt(0).toUpperCase() + produit.slice(1)} acheté(e) !`);
   }

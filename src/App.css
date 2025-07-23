@@ -38,14 +38,14 @@
 }
 
  body {
-            font-family: 'Courier New', monospace;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f4f1e8;
-            color: #2c1810;
-            line-height: 1.6;
-        }
+    font-family: 'Courier New', monospace;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f4f1e8;
+    color: #2c1810;
+    line-height: 1.6;
+}
         
         .header {
             text-align: center;

@@ -67,20 +67,20 @@ export const typesClients: ClientType[] = [
 ];
 
 export const prixAchat = {
-  cafe: 3,
-  the: 2,
-  chocolat: 4,
-  croissant: 2,
-  muffin: 3,
-  livres: 12,
-  matcha: 4,
-  latteMarron: 5,
-  cookie: 2,
+  cafe: 2,
+  the: 1.5,
+  chocolat: 2.5,
+  croissant: 1.2,
+  muffin: 1.5,
+  livres: 10,
+  matcha: 2.5,
+  latteMarron: 3,
+  cookie: 1,
 };
 
 export const prixVente = {
   cafe: 3,
-  the: 2,
+  the: 2.2,
   chocolat: 4,
   croissant: 2,
   muffin: 3,

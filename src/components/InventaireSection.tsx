@@ -1,6 +1,6 @@
 import React from "react";
 import { Inventaire, ClientActuel } from "../types";
-import { prixAchat } from "../constants";
+import { prixAchat, prixVente } from "../constants";
 
 interface InventaireProps {
   inventaire: Inventaire;
@@ -43,14 +43,20 @@ const InventaireSection: React.FC<InventaireProps> = ({
           <div className="inventory-title">Produits</div>
           {produitsUniques.map(p => (
             <div className="item" key={p}>
-              {p}: {(inventaire[p] as number) ?? 0}
+              {p}: {(inventaire[p] as number) ?? 0}{" "}
+              <span style={{ fontSize: "0.95em", color: "#888" }}>
+                (Vente: {(prixVente as Record<string, number>)[p] ?? "?"}€)
+              </span>
             </div>
           ))}
           <div className="inventory-separator"></div>
           <div className="inventory-title">Livres</div>
           {objetsDebloques.genresLivres.map(g => (
             <div className="item" key={g}>
-              {g}: {inventaire.livres[g]}
+              {g}: {inventaire.livres[g]}{" "}
+              <span style={{ fontSize: "0.95em", color: "#888" }}>
+                (Vente: {prixVente.livres}€)
+              </span>
             </div>
           ))}
         </div>
@@ -62,7 +68,7 @@ const InventaireSection: React.FC<InventaireProps> = ({
             Acheter {p} ({prixAchat[p as keyof typeof prixAchat] ?? "?"}€)
           </button>
         ))}
-        <button onClick={acheterLivres} aria-label="Acheter des livres pour 12 euros">
+        <button onClick={acheterLivres} aria-label="Acheter des livres">
           Acheter des Livres ({prixAchat.livres}€)
         </button>
       </div>

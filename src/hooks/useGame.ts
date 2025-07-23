@@ -44,11 +44,7 @@ export default function useGame() {
     genresLivres: Object.keys(inventaireInitial.livres)
   });
   const [quetes, setQuetes] = useState<any[]>(() =>
-    genererNouvellesQuetes({
-      boissons: Object.keys(inventaireInitial).filter(k => k !== "livres"),
-      nourritures: Object.keys(inventaireInitial).filter(k => k !== "livres"),
-      genresLivres: Object.keys(inventaireInitial.livres)
-    })
+    genererNouvellesQuetes(objetsDebloques)
   );
 
   const logRef = useRef<HTMLDivElement>(null);

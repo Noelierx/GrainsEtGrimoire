@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from "react";
 
+import React, { useEffect, useRef } from "react";
+import { ClientActuel, Inventaire } from "../types";
+
 interface ClientSectionProps {
-  clientActuel: any;
-  inventaire: any;
+  clientActuel: ClientActuel | null;
+  inventaire: Inventaire;
   servir: (item: string, type: "boisson" | "nourriture") => void;
   recommanderLivre: (genre: string) => void;
   terminerService: () => void;

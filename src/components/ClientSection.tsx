@@ -1,6 +1,4 @@
 import React, { useEffect, useRef } from "react";
-
-import React, { useEffect, useRef } from "react";
 import { ClientActuel, Inventaire } from "../types";
 
 interface ClientSectionProps {

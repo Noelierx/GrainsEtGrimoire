@@ -90,6 +90,6 @@ export const prixVente = {
   cookie: 2,
 };
 
-export const allBoissons = ["cafe", "the", "chocolat", "Matcha", "latteMarron"];
+export const allBoissons = ["cafe", "the", "chocolat", "matcha", "latteMarron"];
 export const allNourritures = ["croissant", "muffin", "cookie"];
 export const allGenresLivres = ["Roman", "Science-Fiction", "Polar", "Philosophie", "Cuisine", "Poesie"];

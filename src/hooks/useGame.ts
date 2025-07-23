@@ -50,8 +50,6 @@ export default function useGame() {
       genresLivres: Object.keys(inventaireInitial.livres)
     })
   );
-  const [quetesTerminees] = useState<any[]>([]);
-  const [notificationQuete] = useState<string | null>(null);
 
   const logRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -173,8 +171,6 @@ export default function useGame() {
     acheterLivres,
     acheterProduit,
     quetes,
-    objetsDebloques,
-    quetesTerminees,
-    notificationQuete
+    objetsDebloques
   };
 }

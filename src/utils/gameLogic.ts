@@ -1,5 +1,6 @@
-import { ClientType, ClientActuel, Inventaire, HandleEndServiceProps, HandleClientLeaveProps, HandleClientActionProps, HandlePurchaseProps } from "../types";
+import { ClientType, ClientActuel, Inventaire, HandleEndServiceProps, HandleClientLeaveProps, HandleClientActionProps, HandlePurchaseProps, Quete } from "../types";
 import { prixAchat, prixVente, allBoissons, allNourritures, allGenresLivres } from "../constants";
+import React from "react";
 
 // Génération dynamique des types de quêtes
 const queteQuantites = {
@@ -44,25 +45,16 @@ export function getRandomClient(
   const nourrituresPossibles = clientType.nourritures.filter(n => objetsDebloques.nourritures.includes(n));
   const genresLivresPossibles = clientType.genresLivres.filter(g => objetsDebloques.genresLivres.includes(g));
 
-  const boissonChoisie = (boissonsPossibles.length > 0
-    ? boissonsPossibles
-    : objetsDebloques.boissons
-  )[Math.floor(Math.random() * (boissonsPossibles.length > 0 ? boissonsPossibles.length : objetsDebloques.boissons.length))];
+  const boissonsList = boissonsPossibles.length > 0 ? boissonsPossibles : objetsDebloques.boissons;
+  const boissonChoisie = boissonsList[Math.floor(Math.random() * boissonsList.length)];
 
-  const nourritureChoisie = (nourrituresPossibles.length > 0
-    ? nourrituresPossibles
-    : objetsDebloques.nourritures
-  ).length > 0
-    ? (nourrituresPossibles.length > 0
-        ? nourrituresPossibles
-        : objetsDebloques.nourritures
-      )[Math.floor(Math.random() * (nourrituresPossibles.length > 0 ? nourrituresPossibles.length : objetsDebloques.nourritures.length))]
+  const nourrituresList = nourrituresPossibles.length > 0 ? nourrituresPossibles : objetsDebloques.nourritures;
+  const nourritureChoisie = nourrituresList.length > 0 
+    ? nourrituresList[Math.floor(Math.random() * nourrituresList.length)]
     : null;
 
-  const genreChoisie = (genresLivresPossibles.length > 0
-    ? genresLivresPossibles
-    : objetsDebloques.genresLivres
-  )[Math.floor(Math.random() * (genresLivresPossibles.length > 0 ? genresLivresPossibles.length : objetsDebloques.genresLivres.length))];
+  const genresList = genresLivresPossibles.length > 0 ? genresLivresPossibles : objetsDebloques.genresLivres;
+  const genreChoisie = genresList[Math.floor(Math.random() * genresList.length)];
 
   return {
     nom: clientType.nom,
@@ -120,32 +112,6 @@ export function handleClientLeave({
   log(`😠 ${clientActuel.nom} repart mécontent par manque de patience...`);
   setSatisfaction((s: number) => Math.max(0, s - 15));
   setClientActuel(null);
-}
-
-export function restockInventory(inv: Inventaire, jour: number, objetsDebloques?: {boissons: string[], nourritures: string[]}): Inventaire {
-  if (!objetsDebloques) {
-    return {
-      ...inv,
-      cafe: inv.cafe + Math.max(1, 3 - Math.floor(jour / 10)),
-      the: inv.the + Math.max(1, 2 - Math.floor(jour / 15)),
-      chocolat: inv.chocolat + 1,
-      croissant: inv.croissant + Math.max(1, 2 - Math.floor(jour / 12)),
-      muffin: inv.muffin + 1
-    };
-  }
-
-  let newInv = { ...inv };
-  objetsDebloques.boissons.forEach(b => {
-    const inc = 2;
-    const current = newInv[b];
-    newInv[b] = typeof current === "number" ? current + inc : inc;
-  });
-  objetsDebloques.nourritures.forEach(n => {
-    const inc = 2;
-    const current = newInv[n];
-    newInv[n] = typeof current === "number" ? current + inc : inc;
-  });
-  return newInv;
 }
 
 export function restockBooks(inv: Inventaire): Inventaire {
@@ -262,7 +228,7 @@ export function handlePurchase({
   }
 }
 
-export function genererNouvellesQuetes(objetsDebloques: {boissons: string[], nourritures: string[], genresLivres: string[]}): any[] {
+export function genererNouvellesQuetes(objetsDebloques: {boissons: string[], nourritures: string[], genresLivres: string[]}): Quete[] {
   const typesQuetes = getTypesQuetes();
   const pool = typesQuetes.filter(q =>
     (q.type === "boisson" && objetsDebloques.boissons.includes(q.cible)) ||
@@ -278,7 +244,7 @@ export function genererNouvellesQuetes(objetsDebloques: {boissons: string[], nou
   });
 }
 
-export function verifierQuetes(quetes: any[], action: {type: string, cible: string}, log: (msg: string) => void): any[] {
+export function verifierQuetes(quetes: Quete[], action: {type: string, cible: string}, log: (msg: string) => void): Quete[] {
   const nouvellesQuetes = quetes.map(q => {
     if (!q.completee && q.type === action.type && q.cible === action.cible) {
       const nouvelleProgression = q.progression + 1;
@@ -295,11 +261,17 @@ export function verifierQuetes(quetes: any[], action: {type: string, cible: stri
   return nouvellesQuetes;
 }
 
-export function toutesQuetesCompletees(quetes: any[]): boolean {
+export function toutesQuetesCompletees(quetes: Quete[]): boolean {
   return quetes.every(q => q.completee);
 }
 
-export function donnerRecompense(objetsDebloques: {boissons: string[], nourritures: string[], genresLivres: string[]}, setObjetsDebloques: any, setInventaire: any, setArgent: any, log: (msg: string) => void) {
+export function donnerRecompense(
+  objetsDebloques: { boissons: string[], nourritures: string[], genresLivres: string[] },
+  setObjetsDebloques: React.Dispatch<React.SetStateAction<{ boissons: string[], nourritures: string[], genresLivres: string[] }>>,
+  setInventaire: React.Dispatch<React.SetStateAction<Inventaire>>,
+  setArgent: React.Dispatch<React.SetStateAction<number>>,
+  log: (msg: string) => void
+) {
   const nonDebloques = [
     ...allBoissons.filter(b => !objetsDebloques.boissons.includes(b)).map(b => ({ type: "boisson", nom: b })),
     ...allNourritures.filter(n => !objetsDebloques.nourritures.includes(n)).map(n => ({ type: "nourriture", nom: n })),

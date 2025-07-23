@@ -97,29 +97,31 @@ const ClientSection: React.FC<ClientSectionProps> = ({
                   );
                 })
               }
-              {!clientActuel.servi.livre && clientActuel.genresLivres
-                .filter(genre => objetsDebloques.genresLivres.includes(genre))
-                .map((genre: string, idx: number) => {
-                  const shouldFocus =
-                    clientActuel.servi.boisson &&
-                    (clientActuel.nourritures.filter(n => objetsDebloques.nourritures.includes(n)).length === 0 || clientActuel.servi.nourriture) &&
-                    idx === 0 &&
-                    !clientActuel.servi.livre;
-                  return (
-                    <button
-                      key={genre}
-                      ref={shouldFocus ? firstActionRef : undefined}
-                      onClick={() => recommanderLivre(genre)}
-                      disabled={inventaire.livres[genre] <= 0}
-                      aria-label={`Recommander livre ${genre}${genre === clientActuel.genreDemande ? " (préféré)" : ""}${inventaire.livres[genre] <= 0 ? " (rupture)" : ""}`}
-                    >
-                      {genre === clientActuel.genreDemande ? "✨" : ""}
-                      {genre}
-                      {inventaire.livres[genre] <= 0 ? " (rupture)" : ""}
-                    </button>
-                  );
-                })
-              }
+              {!clientActuel.servi.livre && (() => {
+                const filteredNourritures = clientActuel.nourritures.filter(n => objetsDebloques.nourritures.includes(n));
+                return clientActuel.genresLivres
+                  .filter(genre => objetsDebloques.genresLivres.includes(genre))
+                  .map((genre: string, idx: number) => {
+                    const shouldFocus =
+                      clientActuel.servi.boisson &&
+                      (filteredNourritures.length === 0 || clientActuel.servi.nourriture) &&
+                      idx === 0 &&
+                      !clientActuel.servi.livre;
+                    return (
+                      <button
+                        key={genre}
+                        ref={shouldFocus ? firstActionRef : undefined}
+                        onClick={() => recommanderLivre(genre)}
+                        disabled={inventaire.livres[genre] <= 0}
+                        aria-label={`Recommander livre ${genre}${genre === clientActuel.genreDemande ? " (préféré)" : ""}${inventaire.livres[genre] <= 0 ? " (rupture)" : ""}`}
+                      >
+                        {genre === clientActuel.genreDemande ? "✨" : ""}
+                        {genre}
+                        {inventaire.livres[genre] <= 0 ? " (rupture)" : ""}
+                      </button>
+                    );
+                  });
+              })()}
               <div className="terminer-service-separator"></div>
               <button onClick={terminerService}>
                 Terminer le service

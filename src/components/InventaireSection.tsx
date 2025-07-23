@@ -43,7 +43,7 @@ const InventaireSection: React.FC<InventaireProps> = ({
           <div className="inventory-title">Produits</div>
           {produitsUniques.map(p => (
             <div className="item" key={p}>
-              {p}: {(inventaire as any)[p] ?? 0}
+              {p}: {(inventaire[p] as number) ?? 0}
             </div>
           ))}
           <div className="inventory-separator"></div>

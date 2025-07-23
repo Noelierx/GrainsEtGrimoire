@@ -25,9 +25,7 @@ const ClientSection: React.FC<ClientSectionProps> = ({
     if (clientActuel && firstActionRef.current) {
       firstActionRef.current.focus();
     }
-    // eslint-disable-next-line
-  }, [clientActuel && clientActuel.nom]);
-
+  }, [clientActuel?.nom]);
   return (
     <section className="game-area" aria-labelledby="titre-client-actuel">
       <h2 id="titre-client-actuel">Client actuel :</h2>
